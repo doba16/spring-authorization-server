@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import org.springframework.lang.Nullable;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
@@ -57,6 +58,7 @@ public class RegisteredClient implements Serializable {
 	private Set<String> scopes;
 	private ClientSettings clientSettings;
 	private TokenSettings tokenSettings;
+	private Set<GrantedAuthority> authorities;
 
 	protected RegisteredClient() {
 	}
@@ -172,6 +174,10 @@ public class RegisteredClient implements Serializable {
 		return this.tokenSettings;
 	}
 
+	public Set<GrantedAuthority> getAuthorities() {
+		return this.authorities;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -199,7 +205,7 @@ public class RegisteredClient implements Serializable {
 	public int hashCode() {
 		return Objects.hash(this.id, this.clientId, this.clientIdIssuedAt, this.clientSecret, this.clientSecretExpiresAt,
 				this.clientName, this.clientAuthenticationMethods, this.authorizationGrantTypes, this.redirectUris,
-				this.scopes, this.clientSettings, this.tokenSettings);
+				this.scopes, this.clientSettings, this.tokenSettings, this.authorities);
 	}
 
 	@Override
@@ -214,6 +220,7 @@ public class RegisteredClient implements Serializable {
 				", scopes=" + this.scopes +
 				", clientSettings=" + this.clientSettings +
 				", tokenSettings=" + this.tokenSettings +
+				", authorities=" + this.authorities +
 				'}';
 	}
 
@@ -256,6 +263,7 @@ public class RegisteredClient implements Serializable {
 		private final Set<String> scopes = new HashSet<>();
 		private ClientSettings clientSettings;
 		private TokenSettings tokenSettings;
+		private final Set<GrantedAuthority> authorities = new HashSet<>();
 
 		protected Builder(String id) {
 			this.id = id;
@@ -279,6 +287,9 @@ public class RegisteredClient implements Serializable {
 			}
 			if (!CollectionUtils.isEmpty(registeredClient.getScopes())) {
 				this.scopes.addAll(registeredClient.getScopes());
+			}
+			if (!CollectionUtils.isEmpty(registeredClient.getAuthorities())) {
+				this.authorities.addAll(registeredClient.getAuthorities());
 			}
 			this.clientSettings = ClientSettings.withSettings(registeredClient.getClientSettings().getSettings()).build();
 			this.tokenSettings = TokenSettings.withSettings(registeredClient.getTokenSettings().getSettings()).build();
@@ -466,6 +477,16 @@ public class RegisteredClient implements Serializable {
 			return this;
 		}
 
+		public Builder authority(GrantedAuthority authority) {
+			this.authorities.add(authority);
+			return this;
+		}
+
+		public Builder authorities(Consumer<Set<GrantedAuthority>> authoritiesConsumer) {
+			authoritiesConsumer.accept(this.authorities);
+			return this;
+		}
+
 		/**
 		 * Builds a new {@link RegisteredClient}.
 		 *
@@ -527,6 +548,8 @@ public class RegisteredClient implements Serializable {
 					new HashSet<>(this.scopes));
 			registeredClient.clientSettings = this.clientSettings;
 			registeredClient.tokenSettings = this.tokenSettings;
+			registeredClient.authorities = Collections.unmodifiableSet(
+					new HashSet<>(this.authorities));
 
 			return registeredClient;
 		}

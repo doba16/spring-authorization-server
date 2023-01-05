@@ -79,8 +79,7 @@ public class OAuth2ClientAuthenticationToken extends AbstractAuthenticationToken
 	 */
 	public OAuth2ClientAuthenticationToken(RegisteredClient registeredClient, ClientAuthenticationMethod clientAuthenticationMethod,
 			@Nullable Object credentials) {
-		super(Collections.emptyList());
-		Assert.notNull(registeredClient, "registeredClient cannot be null");
+		super(assertClient(registeredClient).getAuthorities());
 		Assert.notNull(clientAuthenticationMethod, "clientAuthenticationMethod cannot be null");
 		this.clientId = registeredClient.getClientId();
 		this.registeredClient = registeredClient;
@@ -88,6 +87,11 @@ public class OAuth2ClientAuthenticationToken extends AbstractAuthenticationToken
 		this.credentials = credentials;
 		this.additionalParameters = Collections.unmodifiableMap(Collections.emptyMap());
 		setAuthenticated(true);
+	}
+
+	public static RegisteredClient assertClient(RegisteredClient registeredClient) {
+		Assert.notNull(registeredClient, "registeredClient cannot be null");
+		return registeredClient;
 	}
 
 	@Override
